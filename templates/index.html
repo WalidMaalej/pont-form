@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Pont Mystère</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #4a5568;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .ghost-narrator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 3em;
+            z-index: 1000;
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .speech-bubble {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 15px;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            right: 30px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 12px solid #333;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: -9px;
+            right: 33px;
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 9px solid white;
+        }
+
+        .bridge-map {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            background: linear-gradient(45deg, #a8e6cf, #dcedc1);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .bridge-map img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .bridge-zone {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            font-size: 0.6em;
+            padding: 2px;
+            border: 1px dashed #666;
+            border-radius: 6px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.4);
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .bridge-zone:hover {
+            background: rgba(255, 183, 77, 0.5);
+            transform: scale(1.05);
+        }
+
+        .zone1 {
+            top: 0;
+            left: 0;
+            width: 33.33%;
+            height: 100%;
+        }
+
+        .zone2 {
+            top: 0;
+            left: 66.66%;
+            width: 33.33%;
+            height: 100%;
+        }
+
+        .zone3 {
+            top: 0;
+            left: 33.33%;
+            width: 33.33%;
+            height: 100%;
+        }
+
+        .zoomed-zone {
+            display: none;
+            background: linear-gradient(45deg, #a8e6cf, #dcedc1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+            position: relative;
+            border: 3px solid #ff6b6b;
+        }
+
+        .zoomed-zone.active {
+            display: block;
+        }
+
+        .zoomed-zone img {
+            max-height: 600px;
+            width: auto;
+            height: auto;
+            display: block;
+            border-radius: 15px;
+            opacity: 0.7;
+            margin: 0 auto;
+        }
+
+        .emotion-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .draggable-emotion {
+            background: white;
+            padding: 5px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: move;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            user-select: none;
+            border: 1px solid #ccc;
+            font-size: 0.65em;
+        }
+
+        .draggable-emotion div:first-child {
+            font-size: 1.2em;
+            margin-bottom: 2px;
+        }
+
+        .draggable-emotion:hover {
+            transform: scale(1.03);
+            border-color: #ff6b6b;
+        }
+
+        .placed-emotion {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px 6px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            cursor: move;
+            font-size: 0.7em;
+            border: 2px solid #74b9ff;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 30px;
+            min-height: 30px;
+        }
+
+        .placed-emotion > div:first-child {
+            font-size: 1.3em;
+            margin-bottom: 2px;
+        }
+
+        .element-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .draggable-element {
+            background: white;
+            padding: 8px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: move;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+            user-select: none;
+        }
+
+        .draggable-element:hover {
+            transform: scale(1.1);
+        }
+
+        .transformation-area {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+            position: relative;
+            border: 3px dashed #ff6b6b;
+            overflow: hidden;
+        }
+
+        .transformation-area .bridge-background {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 15px;
+            opacity: 0.7;
+            margin: 0 auto;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .transformation-area .placed-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 4px 6px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            cursor: move;
+            font-size: 0.7em;
+            border: 2px solid #74b9ff;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 30px;
+            min-height: 30px;
+        }
+
+        .placed-element > div:first-child {
+            font-size: 1.3em;
+            margin-bottom: 2px;
+        }
+
+        .canvas-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 5;
+            font-size: 0.9em;
+        }
+
+        .final-card {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .badge {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin: 15px 0;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .screenshot {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            h1 { font-size: 2em; }
+            .emotion-palette { grid-template-columns: repeat(2, 1fr); }
+            .element-palette { grid-template-columns: repeat(2, 1fr); }
+            .speech-bubble { 
+                max-width: 250px;
+                right: 10px;
+                top: 70px;
+            }
+            .screenshot { max-width: 100%; }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="ghost-narrator" onclick="toggleSpeechBubble()">👻</div>
+    <div class="speech-bubble" id="speech-bubble">
+        Explore le pont et ses alentours. Clique sur les personnages pour leur parler. Réponds aux questions pour obtenir des indices. Plus tu observes et questionnes, plus tu comprends l'histoire du lieu.
+    </div>
+
+    <div class="container">
+        <div id="welcome-screen" class="screen active">
+            <h1>🌉 Le Pont Mystère</h1>
+            <div class="intro">
+                Bienvenue dans une aventure d’exploration urbaine unique
+            </div>
+            <div style="text-align: center;">
+                <button class="btn" onclick="startGame()">🔍 Commencer l’aventure</button>
+            </div>
+        </div>
+
+        <div id="mission1-screen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 50%"></div>
+            </div>
+            <h2>Mission 1 : "Cherche et ressens" 🗺️</h2>
+            <p>Clique sur une zone du pont de Khaznadar pour l'explorer en détail.</p>
+            
+            <div class="bridge-map" id="bridge-overview">
+                <img src="/static/pont-khaznadar.png" alt="khaznadar" />
+                <div class="bridge-zone zone1" data-zone="nord" onclick="zoomToZone('nord')">Zone Nord</div>
+                <div class="bridge-zone zone2" data-zone="sud" onclick="zoomToZone('sud')">Zone Sud</div>
+                <div class="bridge-zone zone3" data-zone="centre" onclick="zoomToZone('centre')">Milieu</div>
+            </div>
+
+            <div id="zoomed-nord" class="zoomed-zone">
+                <h3>Zone Nord - Vue détaillée</h3>
+                <img src="/static/zone-nord.png" alt="Zone Nord" />
+                <p>Glisse tes émotions dans cette zone pour exprimer ce que tu ressens :</p>
+                <div class="emotion-palette">
+                    <div class="draggable-emotion" draggable="true" data-emotion="dangereux">
+                        <div style="font-size: 2em;">🚫</div>
+                        <div>Dangereux – zone à risque</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sale">
+                        <div style="font-size: 2em;">🤢</div>
+                        <div>Sale / Dégoûtant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="jeu">
+                        <div style="font-size: 2em;">⚽</div>
+                        <div>Zone de jeu – espace pour s’amuser</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="vegetalise">
+                        <div style="font-size: 2em;">🌳</div>
+                        <div>Agréable / Végétalisé</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="artistique">
+                        <div style="font-size: 2em;">🎨</div>
+                        <div>Artistique / Beau</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="ennui">
+                        <div style="font-size: 2em;">💤</div>
+                        <div>Ennuyant / Rien à faire</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="confortable">
+                        <div style="font-size: 2em;">🛋</div>
+                        <div>Confortable / Repos</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="bruit">
+                        <div style="font-size: 2em;">🔊</div>
+                        <div>Bruit / Bruyant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="luminosite">
+                        <div style="font-size: 2em;">💡</div>
+                        <div>Luminosité / Rassurant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sombre">
+                        <div style="font-size: 2em;">🌚</div>
+                        <div>Sombre / Inquiétant</div>
+                    </div>
+                </div>
+                <textarea class="message-input" placeholder="Explique pourquoi tu ressens cela... (optionnel)" id="emotion-reason-nord"></textarea>
+                <button class="btn" onclick="completeZoneExploration('nord')">Terminer l'exploration de cette zone</button>
+            </div>
+
+            <div id="zoomed-sud" class="zoomed-zone">
+                <h3>Zone Sud - Vue détaillée</h3>
+                <img src="/static/zone-sud.png" alt="Zone Sud" />
+                <p>Glisse tes émotions dans cette zone pour exprimer ce que tu ressens :</p>
+                <div class="emotion-palette">
+                    <div class="draggable-emotion" draggable="true" data-emotion="dangereux">
+                        <div style="font-size: 2em;">🚫</div>
+                        <div>Dangereux – zone à risque</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sale">
+                        <div style="font-size: 2em;">🤢</div>
+                        <div>Sale / Dégoûtant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="jeu">
+                        <div style="font-size: 2em;">⚽</div>
+                        <div>Zone de jeu – espace pour s’amuser</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="vegetalise">
+                        <div style="font-size: 2em;">🌳</div>
+                        <div>Agréable / Végétalisé</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="artistique">
+                        <div style="font-size: 2em;">🎨</div>
+                        <div>Artistique / Beau</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="ennui">
+                        <div style="font-size: 2em;">💤</div>
+                        <div>Ennuyant / Rien à faire</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="confortable">
+                        <div style="font-size: 2em;">🛋</div>
+                        <div>Confortable / Repos</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="bruit">
+                        <div style="font-size: 2em;">🔊</div>
+                        <div>Bruit / Bruyant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="luminosite">
+                        <div style="font-size: 2em;">💡</div>
+                        <div>Luminosité / Rassurant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sombre">
+                        <div style="font-size: 2em;">🌚</div>
+                        <div>Sombre / Inquiétant</div>
+                    </div>
+                </div>
+                <textarea class="message-input" placeholder="Explique pourquoi tu ressens cela... (optionnel)" id="emotion-reason-sud"></textarea>
+                <button class="btn" onclick="completeZoneExploration('sud')">Terminer l'exploration de cette zone</button>
+            </div>
+
+            <div id="zoomed-centre" class="zoomed-zone">
+                <h3>Sous le Pont - Vue détaillée</h3>
+                <img src="/static/milieu.png" alt="Sous le Pont" />
+                <p>Glisse tes émotions dans cette zone pour exprimer ce que tu ressens :</p>
+                <div class="emotion-palette">
+                    <div class="draggable-emotion" draggable="true" data-emotion="dangereux">
+                        <div style="font-size: 2em;">🚫</div>
+                        <div>Dangereux – zone à risque</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sale">
+                        <div style="font-size: 2em;">🤢</div>
+                        <div>Sale / Dégoûtant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="jeu">
+                        <div style="font-size: 2em;">⚽</div>
+                        <div>Zone de jeu – espace pour s’amuser</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="vegetalise">
+                        <div style="font-size: 2em;">🌳</div>
+                        <div>Agréable / Végétalisé</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="artistique">
+                        <div style="font-size: 2em;">🎨</div>
+                        <div>Artistique / Beau</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="ennui">
+                        <div style="font-size: 2em;">💤</div>
+                        <div>Ennuyant / Rien à faire</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="confortable">
+                        <div style="font-size: 2em;">🛋</div>
+                        <div>Confortable / Repos</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="bruit">
+                        <div style="font-size: 2em;">🔊</div>
+                        <div>Bruit / Bruyant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="luminosite">
+                        <div style="font-size: 2em;">💡</div>
+                        <div>Luminosité / Rassurant</div>
+                    </div>
+                    <div class="draggable-emotion" draggable="true" data-emotion="sombre">
+                        <div style="font-size: 2em;">🌚</div>
+                        <div>Sombre / Inquiétant</div>
+                    </div>
+                </div>
+                <textarea class="message-input" placeholder="Explique pourquoi tu ressens cela... (optionnel)" id="emotion-reason-centre"></textarea>
+                <button class="btn" onclick="completeZoneExploration('centre')">Terminer l'exploration de cette zone</button>
+            </div>
+        </div>
+
+        <div id="mission2-screen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+            </div>
+            <h2>Mission 2 : "Transforme le pont" ✨</h2>
+            <p>Imagine comment tu aimerais transformer cet espace. Glisse les éléments sur le pont !</p>
+            
+            <div class="element-palette">
+                <div class="draggable-element" draggable="true" data-element="banc">
+                    <div style="font-size: 2em;">🪑</div>
+                    <div>Banc</div>
+                </div>
+                <div class="draggable-element" draggable="true" data-element="skate">
+                    <div style="font-size: 2em;">🛹</div>
+                    <div>Skatepark</div>
+                </div>
+                <div class="draggable-element" draggable="true" data-element="biblio">
+                    <div style="font-size: 2em;">📚</div>
+                    <div>Bibliothèque</div>
+                </div>
+                <div class="draggable-element" draggable="true" data-element="fresque">
+                    <div style="font-size: 2em;">🎨</div>
+                    <div>Fresque</div>
+                </div>
+                <div class="draggable-element" draggable="true" data-element="jardin">
+                    <div style="font-size: 2em;">🌱</div>
+                    <div>Jardin</div>
+                </div>
+                <div class="draggable-element" draggable="true" data-element="cafe">
+                    <div style="font-size: 2em;">☕</div>
+                    <div>Café</div>
+                </div>
+            </div>
+
+            <div class="transformation-area" id="bridge-canvas">
+                <img src="/static/pont-khaznadar.png" alt="khaznadar" class="bridge-background" />
+                <p class="canvas-hint">Glisse tes idées ici pour transformer le pont !</p>
+            </div>
+
+            <button class="btn" onclick="completeMission2()">Finaliser ma transformation</button>
+        </div>
+
+        <div id="final-screen" class="screen">
+            <div class="final-card">
+                <div class="badge">🏆</div>
+                <h2>Félicitations, Explorateur du Pont !</h2>
+                <p>Tu as complété toutes les missions et découvert les secrets du pont de Khaznadar.</p>
+                
+                <div style="background: white; border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <h3>🎫 Ta Carte d'Explorateur</h3>
+                    <div id="explorer-summary">
+                    </div>
+                </div>
+
+                <!-- <button class="btn" onclick="downloadCard()">📱 Télécharger ma carte</button> -->
+                <button class="btn secondary" onclick="downloadPDF()">📄 Télécharger en PDF</button>
+                <button class="btn secondary" onclick="restartGame()">🔄 Recommencer l'aventure</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirmation</h3>
+            <p id="modal-text">Message</p>
+            <button class="btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let gameData = {
+            mission1: { zone: '', emotions: [], reason: '', screenshot: '' },
+            mission2: { elements: [], screenshot: '' }
+        };
+
+        let currentScreen = 'welcome-screen';
+        let draggedElement = null;
+
+        function startGame() {
+            showScreen('mission1-screen');
+            setTimeout(() => {
+                document.getElementById('speech-bubble').style.display = 'block';
+            }, 1000);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            currentScreen = screenId;
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-text').textContent = text;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function toggleSpeechBubble() {
+            const bubble = document.getElementById('speech-bubble');
+            bubble.style.display = bubble.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function zoomToZone(zone) {
+            document.getElementById('bridge-overview').style.display = 'none';
+            document.getElementById(`zoomed-${zone}`).classList.add('active');
+            gameData.mission1.zone = zone;
+            setupEmotionDragDrop(zone);
+        }
+
+        function setupEmotionDragDrop(zone) {
+            const zoomedArea = document.getElementById(`zoomed-${zone}`);
+            const emotions = zoomedArea.querySelectorAll('.draggable-emotion');
+            
+            emotions.forEach(emotion => {
+                emotion.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+            });
+
+            zoomedArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            });
+
+            zoomedArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedElement) {
+                    const rect = zoomedArea.getBoundingClientRect();
+                    const elementWidth = 30;
+                    const elementHeight = 30;
+                    const x = e.clientX - rect.left - (elementWidth / 2);
+                    const y = e.clientY - rect.top - (elementHeight / 2);
+                    
+                    if (draggedElement.classList.contains('draggable-emotion')) {
+                        const newEmotion = document.createElement('div');
+                        newEmotion.className = 'placed-emotion';
+                        newEmotion.innerHTML = draggedElement.innerHTML;
+                        newEmotion.style.left = x + 'px';
+                        newEmotion.style.top = y + 'px';
+                        
+                        newEmotion.draggable = true;
+                        newEmotion.addEventListener('dragstart', function(e) {
+                            draggedElement = this;
+                        });
+                        
+                        zoomedArea.appendChild(newEmotion);
+                        
+                        gameData.mission1.emotions.push({
+                            emotion: draggedElement.dataset.emotion,
+                            x: x,
+                            y: y,
+                            zone: zone
+                        });
+                    } else if (draggedElement.classList.contains('placed-emotion')) {
+                        draggedElement.style.left = x + 'px';
+                        draggedElement.style.top = y + 'px';
+                        
+                        const index = gameData.mission1.emotions.findIndex(
+                            el => el.emotion === draggedElement.dataset.emotion && el.zone === zone
+                        );
+                        if (index !== -1) {
+                            gameData.mission1.emotions[index].x = x;
+                            gameData.mission1.emotions[index].y = y;
+                        }
+                    }
+                    
+                    draggedElement = null;
+                }
+            });
+        }
+
+        function completeZoneExploration(zone) {
+            if (gameData.mission1.emotions.length === 0) {
+                showModal('Attention', 'Place au moins une émotion dans la zone avant de continuer !');
+                return;
+            }
+            
+            const reason = document.getElementById(`emotion-reason-${zone}`).value.trim();
+            gameData.mission1.reason = reason;
+            
+            const zoomedArea = document.getElementById(`zoomed-${zone}`);
+            html2canvas(zoomedArea).then(canvas => {
+                gameData.mission1.screenshot = canvas.toDataURL('image/png');
+                showModal('Mission 1 Terminée !', 'Tu as exploré le pont avec succès. Passe à la mission suivante !');
+                setTimeout(() => {
+                    closeModal();
+                    showScreen('mission2-screen');
+                }, 2000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTransformationDragDrop();
+        });
+
+        function setupTransformationDragDrop() {
+            const elements = document.querySelectorAll('.draggable-element');
+            const bridgeCanvas = document.getElementById('bridge-canvas');
+            
+            elements.forEach(element => {
+                element.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+            });
+
+            bridgeCanvas.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            });
+
+            bridgeCanvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                if (draggedElement) {
+                    const rect = bridgeCanvas.getBoundingClientRect();
+                    const elementWidth = 30;
+                    const elementHeight = 30;
+                    const x = e.clientX - rect.left - (elementWidth / 2);
+                    const y = e.clientY - rect.top - (elementHeight / 2);
+                    
+                    if (draggedElement.classList.contains('draggable-element')) {
+                        const newElement = document.createElement('div');
+                        newElement.className = 'placed-element';
+                        newElement.innerHTML = draggedElement.innerHTML;
+                        newElement.style.left = x + 'px';
+                        newElement.style.top = y + 'px';
+                        
+                        newElement.draggable = true;
+                        newElement.addEventListener('dragstart', function(e) {
+                            draggedElement = this;
+                        });
+                        
+                        bridgeCanvas.appendChild(newElement);
+                        
+                        gameData.mission2.elements.push({
+                            type: draggedElement.dataset.element,
+                            x: x,
+                            y: y,
+                            text: draggedElement.textContent
+                        });
+                        
+                        const helpText = bridgeCanvas.querySelector('.canvas-hint');
+                        if (helpText) helpText.style.display = 'none';
+                    } else if (draggedElement.classList.contains('placed-element')) {
+                        draggedElement.style.left = x + 'px';
+                        draggedElement.style.top = y + 'px';
+                        
+                        const index = gameData.mission2.elements.findIndex(
+                            el => el.text === draggedElement.textContent
+                        );
+                        if (index !== -1) {
+                            gameData.mission2.elements[index].x = x;
+                            gameData.mission2.elements[index].y = y;
+                        }
+                    }
+                    
+                    draggedElement = null;
+                }
+            });
+        }
+
+        function completeMission2() {
+            if (gameData.mission2.elements.length === 0) {
+                showModal('Attention', 'Ajoute au moins un élément pour transformer le pont !');
+                return;
+            }
+            
+            const bridgeCanvas = document.getElementById('bridge-canvas');
+            html2canvas(bridgeCanvas).then(canvas => {
+                gameData.mission2.screenshot = canvas.toDataURL('image/png');
+                showModal('Mission 2 Terminée !', 'Tu as créé ta vision du pont idéal !');
+                setTimeout(() => {
+                    closeModal();
+                    generateFinalCard();
+                    showScreen('final-screen');
+                }, 2000);
+            });
+        }
+
+        function generateFinalCard() {
+            const summary = document.getElementById('explorer-summary');
+            
+            const emotionEmojis = {
+                'securite': '🛡️',
+                'inconfort': '😰',
+                'liberte': '🕊️',
+                'ennui': '😴'
+            };
+            
+            summary.innerHTML = `
+                <p><strong>Zone explorée:</strong> ${gameData.mission1.zone}</p>
+                <p><strong>Émotions placées:</strong> ${gameData.mission1.emotions.length} émotion(s)</p>
+                ${gameData.mission1.screenshot ? `<img src="${gameData.mission1.screenshot}" alt="Mission 1 Canvas" class="screenshot" />` : '<p>No screenshot available for Mission 1</p>'}
+                <p><strong>Éléments de transformation:</strong> ${gameData.mission2.elements.length} ajout(s)</p>
+                ${gameData.mission2.screenshot ? `<img src="${gameData.mission2.screenshot}" alt="Mission 2 Canvas" class="screenshot" />` : '<p>No screenshot available for Mission 2</p>'}
+                ${gameData.mission1.reason ? `<p style="font-style: italic; margin-top: 15px;">"${gameData.mission1.reason}"</p>` : ''}
+            `;
+        }
+
+        function downloadCard() {
+            fetch('/save-to-drive', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(gameData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showModal('Téléchargement', data.message || 'Erreur lors de la sauvegarde. Veuillez réessayer.');
+                setTimeout(closeModal, 2000);
+            })
+            .catch(error => {
+                showModal('Erreur', 'Une erreur s\'est produite : ' + error.message);
+                setTimeout(closeModal, 2000);
+            });
+        }
+
+        function downloadPDF() {
+            fetch('/generate-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(gameData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la génération du PDF');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `carte_explorateur_${gameData.mission1.zone}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                showModal('Succès', 'Votre carte a été téléchargée en PDF !');
+                setTimeout(closeModal, 2000);
+            })
+            .catch(error => {
+                showModal('Erreur', 'Une erreur s\'est produite : ' + error.message);
+                setTimeout(closeModal, 2000);
+            });
+        }
+
+        function restartGame() {
+            gameData = {
+                mission1: { zone: '', emotions: [], reason: '', screenshot: '' },
+                mission2: { elements: [], screenshot: '' }
+            };
+            
+            document.getElementById('bridge-overview').style.display = 'block';
+            document.querySelectorAll('.zoomed-zone').forEach(zone => {
+                zone.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.placed-emotion').forEach(el => el.remove());
+            document.querySelectorAll('.placed-element').forEach(el => el.remove());
+            
+            document.querySelectorAll('.message-input').forEach(input => input.value = '');
+            
+            const helpText = document.querySelector('#bridge-canvas .canvas-hint');
+            if (helpText) helpText.style.display = 'block';
+            
+            showScreen('welcome-screen');
+        }
+    </script>
+</body>
+</html>
