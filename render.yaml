@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pont-mystere
+    env: python
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    buildCommand: |
+      pip install --upgrade pip
+      # Use requirements.txt if present; otherwise install needed deps directly
+      if [ -f requirements.txt ]; then
+        pip install -r requirements.txt
+      else
+        pip install Flask gunicorn reportlab
+      fi
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 8 --timeout 120
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "2"
